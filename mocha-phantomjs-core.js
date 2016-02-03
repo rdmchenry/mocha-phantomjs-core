@@ -7,7 +7,9 @@ var
   config = JSON.parse(system.args[3] || '{}'),
   configured = false,
   runStarted = false,
-  hookData
+  hookData,
+  orchestrators,
+  orchestratorsInitialized = false;
 
 if (!url) {
   system.stdout.writeLine("Usage: phantomjs mocha-phantomjs-core.js URL REPORTER [CONFIG-AS-JSON]")
@@ -79,6 +81,14 @@ page.onError = function(msg, traces) {
   }, ''))
 }
 
+if(config.orchestrators && Array.isArray(config.orchestrators)) {
+	config.orchestrators.forEach(function(path){
+		if(typeof path === typeof "" && fs.exists(path) && /\.js$/i.test(path)) {
+			(orchestrators = orchestrators || []).push(path);
+		}
+	});
+}
+
 // Load the test page
 page.open(url)
 page.onInitialized = function() {
@@ -124,6 +134,17 @@ page.onLoadFinished = function(status) {
   if (status !== 'success') {
     fail('Failed to load the page. Check the url: ' + url)
     return
+  }
+  
+  if(orchestrators && !orchestratorsInitialized) {
+	  orchestrators.forEach(function(path){
+		 if(!phantom.injectJs(path)) {
+			 fail('Failed to load the orchestrator at path \''+path+'\'');
+		 } 
+	  });
+	  orchestratorsInitialized = true;
+	  configured = true;
+	  runStarted = true;
   }
 
   var loadTimeout = config.loadTimeout || 10000
