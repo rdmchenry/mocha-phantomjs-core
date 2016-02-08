@@ -31,9 +31,9 @@ describe 'mocha-phantomjs-core', ->
         try
           json = JSON.parse data 
           if json.debug and json.stdout
-            console.log data.stdout
+            console.log json.stdout
         finally
-          stdout = stdout.concat data.toString()
+          stdout = stdout.concat data
         return
       mochaPhantomJS.stderr.on 'data', (data) -> stderr = stderr.concat data.toString()
       mochaPhantomJS.on 'exit', (code) ->
