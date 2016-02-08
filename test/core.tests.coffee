@@ -26,7 +26,15 @@ describe 'mocha-phantomjs-core', ->
       ]
       spawnArgs = [spawnArgs[0]] if opts.noargs
       mochaPhantomJS = spawn "#{process.cwd()}/phantomjs", spawnArgs
-      mochaPhantomJS.stdout.on 'data', (data) -> stdout = stdout.concat data.toString()
+      mochaPhantomJS.stdout.on 'data', (data) -> 
+        data = data.toString()
+        try
+          json = JSON.parse data 
+          if json.debug and json.stdout
+            console.log data.stdout
+        finally
+          stdout = stdout.concat data.toString()
+        return
       mochaPhantomJS.stderr.on 'data', (data) -> stderr = stderr.concat data.toString()
       mochaPhantomJS.on 'exit', (code) ->
         resolve { code, stdout, stderr }

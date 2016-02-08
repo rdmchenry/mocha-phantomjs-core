@@ -101,10 +101,11 @@ page.onResourceReceived = function(resource) {
     })
   }
 }
-page.onCallback = function(data) {
+page.onCallback = page_callback;
+function page_callback(data) {
   if (data) {
     if (data.stdout) {
-      output.write(data.stdout)
+      output.write(data.debug ? JSON.stringify(data) : data.stdout)
     } else if (typeof data.screenshot === 'string') {
       page.render(data.screenshot + '.png')
     } else if (data.configureMocha) {
